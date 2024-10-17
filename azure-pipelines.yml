@@ -1,0 +1,37 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: UseJava@1
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
+
+  - script: |
+      wget https://downloads.apache.org/pdfbox/2.0.24/pdfbox-app-2.0.24.jar -O libs/pdfbox.jar
+      wget https://www.bouncycastle.org/download/bcpkix-jdk15on-170.jar -O libs/bcpkix.jar
+      wget https://www.bouncycastle.org/download/bcprov-jdk15on-170.jar -O libs/bcprov.jar
+    displayName: 'Download PDFBox and BouncyCastle Libraries'
+
+  - script: |
+      javac -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF.java
+    displayName: 'Compile SignPDF.java'
+
+  - task: DownloadSecureFile@1
+    name: downloadPfx
+    inputs:
+      secureFile: 'certificate.pfx'
+
+  - script: |
+      java -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF
+    displayName: 'Run PDF Signing Program'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: 'signed_output.pdf'
+      artifactName: 'SignedPDF'
