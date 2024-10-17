@@ -6,6 +6,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  - group: PDFSigningSecrets
+
 steps:
   - task: UseJava@1
     inputs:
@@ -13,6 +16,7 @@ steps:
       jdkArchitectureOption: 'x64'
 
   - script: |
+      mkdir libs
       wget https://downloads.apache.org/pdfbox/2.0.24/pdfbox-app-2.0.24.jar -O libs/pdfbox.jar
       wget https://www.bouncycastle.org/download/bcpkix-jdk15on-170.jar -O libs/bcpkix.jar
       wget https://www.bouncycastle.org/download/bcprov-jdk15on-170.jar -O libs/bcprov.jar
@@ -28,8 +32,11 @@ steps:
       secureFile: 'certificate.pfx'
 
   - script: |
+      mv $(downloadPfx.secureFilePath) certificate.pfx
       java -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF
     displayName: 'Run PDF Signing Program'
+    env:
+      PFX_PASSWORD: $(PFX_PASSWORD)
 
   - task: PublishPipelineArtifact@1
     inputs:
