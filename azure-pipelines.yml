@@ -22,7 +22,7 @@ steps:  # This line is critical to define the start of the steps section
   # Download necessary libraries for PDF signing
   - script: |
       mkdir -p libs  # Create libs directory if it doesn't exist
-      wget https://downloads.apache.org/pdfbox/2.0.27/pdfbox-app-2.0.27.jar -O libs/pdfbox.jar
+      wget https://downloads.apache.org/pdfbox/2.0.32/pdfbox-app-2.0.32.jar
       wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/1.70/bcpkix-jdk15on-1.70.jar -O libs/bcpkix.jar
       wget https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.70/bcprov-jdk15on-1.70.jar -O libs/bcprov.jar
     displayName: 'Download PDFBox and BouncyCastle Libraries'
