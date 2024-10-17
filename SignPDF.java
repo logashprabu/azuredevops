@@ -27,9 +27,11 @@ public class SignPDF {
         signature.setReason("Reason for signing");
         signature.setSignDate(Calendar.getInstance());
 
+        // Load the PFX certificate with the password from an environment variable
+        String pfxPassword = System.getenv("PFX_PASSWORD");
         KeyStore keystore = KeyStore.getInstance("PKCS12");
-        keystore.load(new FileInputStream("certificate.pfx"), "password".toCharArray());
-        PrivateKey privateKey = (PrivateKey) keystore.getKey("alias", "password".toCharArray());
+        keystore.load(new FileInputStream("certificate.pfx"), pfxPassword.toCharArray());
+        PrivateKey privateKey = (PrivateKey) keystore.getKey("alias", pfxPassword.toCharArray());
         Certificate[] certificateChain = keystore.getCertificateChain("alias");
 
         SignatureOptions signatureOptions = new SignatureOptions();
