@@ -29,7 +29,8 @@ steps:  # This line is critical to define the start of the steps section
 
   # Compile your Java file
   - script: |
-      javac -cp "libs/*" SignPDF.java  # Compile SignPDF.java with all required jars
+      # Set the classpath with all required JARs explicitly
+      javac -cp "libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar" SignPDF.java
     displayName: 'Compile SignPDF.java'
 
   # Download the PFX certificate securely
