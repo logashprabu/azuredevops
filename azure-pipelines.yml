@@ -9,14 +9,17 @@ pool:
 variables:
   - group: PDFSigningSecrets
 
-- task: JavaToolInstaller@0
-  inputs:
-    versionSpec: '8'
-    cleanDestinationDirectory: true
+steps:  # This line is critical to define the start of the steps section
+
+  # Task to install Java JDK
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '8'  # Specify the Java version needed
+      cleanDestinationDirectory: true
 
   # Download necessary libraries for PDF signing
   - script: |
-      mkdir libs
+      mkdir -p libs  # Create libs directory if it doesn't exist
       wget https://downloads.apache.org/pdfbox/2.0.24/pdfbox-app-2.0.24.jar -O libs/pdfbox.jar
       wget https://www.bouncycastle.org/download/bcpkix-jdk15on-170.jar -O libs/bcpkix.jar
       wget https://www.bouncycastle.org/download/bcprov-jdk15on-170.jar -O libs/bcprov.jar
@@ -24,7 +27,7 @@ variables:
 
   # Compile your Java file
   - script: |
-      javac -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF.java
+      javac -cp "libs/*" SignPDF.java  # Compile SignPDF.java with all required jars
     displayName: 'Compile SignPDF.java'
 
   # Download the PFX certificate securely
@@ -36,7 +39,7 @@ variables:
   # Run your Java signing program
   - script: |
       mv $(downloadPfx.secureFilePath) certificate.pfx
-      java -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF
+      java -cp "libs/*:." SignPDF  # Run the Java program with the classpath set to all jars
     displayName: 'Run PDF Signing Program'
     env:
       PFX_PASSWORD: $(PFX_PASSWORD)  # Pass the password variable
@@ -44,5 +47,5 @@ variables:
   # Publish the signed PDF
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: 'signed_output.pdf'
+      targetPath: 'signed_output.pdf'  # Ensure this file is created by your Java program
       artifactName: 'SignedPDF'
