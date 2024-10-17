@@ -3,9 +3,6 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS12KeyStore;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
-import org.bouncycastle.pkcs.Pkcs12SafeBag;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -13,7 +10,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
-import java.util.Arrays;
+import java.util.Calendar;
 
 public class SignPDF {
     public static void main(String[] args) {
@@ -40,15 +37,19 @@ public class SignPDF {
 
             // Prepare the signature
             PDSignature signature = new PDSignature();
+            signature.setFilter(PDSignature.FILTER_ADBE_PKCS7_DETACHED);
+            signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_SHA1);
+            signature.setSignDate(Calendar.getInstance());
+
             SignatureOptions signatureOptions = new SignatureOptions();
-            signatureOptions.setVisualSignature(new PDSignature()); // Set visual signature options
+            signatureOptions.setVisualSignature(new PDSignature()); // Adjust as needed for visual signature options
 
             // Sign the document
             document.addSignature(signature, new SignatureInterface() {
                 @Override
                 public byte[] sign(InputStream content) {
-                    // Use the private key to sign the content (implement your signing logic)
-                    // For now, return a placeholder byte array
+                    // Implement signing logic
+                    // Use the private key to sign the content
                     // TODO: Implement actual signing logic using privateKey and content
                     return new byte[0]; // Replace with actual signing logic
                 }
