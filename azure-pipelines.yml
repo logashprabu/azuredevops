@@ -16,6 +16,7 @@ steps:  # This line is critical to define the start of the steps section
     inputs:
       versionSpec: '8'  # Specify the Java version needed
       cleanDestinationDirectory: true
+      jdkArchitectureOption: 'x64'  # Specify the architecture (32-bit or 64-bit)
 
   # Download necessary libraries for PDF signing
   - script: |
