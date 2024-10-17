@@ -9,12 +9,12 @@ pool:
 variables:
   - group: PDFSigningSecrets
 
-steps:
-  - task: UseJava@1
-    inputs:
-      versionSpec: '11'
-      jdkArchitectureOption: 'x64'
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: '8'
+    cleanDestinationDirectory: true
 
+  # Download necessary libraries for PDF signing
   - script: |
       mkdir libs
       wget https://downloads.apache.org/pdfbox/2.0.24/pdfbox-app-2.0.24.jar -O libs/pdfbox.jar
@@ -22,22 +22,26 @@ steps:
       wget https://www.bouncycastle.org/download/bcprov-jdk15on-170.jar -O libs/bcprov.jar
     displayName: 'Download PDFBox and BouncyCastle Libraries'
 
+  # Compile your Java file
   - script: |
       javac -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF.java
     displayName: 'Compile SignPDF.java'
 
+  # Download the PFX certificate securely
   - task: DownloadSecureFile@1
     name: downloadPfx
     inputs:
       secureFile: 'certificate.pfx'
 
+  # Run your Java signing program
   - script: |
       mv $(downloadPfx.secureFilePath) certificate.pfx
       java -cp .:libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar SignPDF
     displayName: 'Run PDF Signing Program'
     env:
-      PFX_PASSWORD: $(PFX_PASSWORD)
+      PFX_PASSWORD: $(PFX_PASSWORD)  # Pass the password variable
 
+  # Publish the signed PDF
   - task: PublishPipelineArtifact@1
     inputs:
       targetPath: 'signed_output.pdf'
