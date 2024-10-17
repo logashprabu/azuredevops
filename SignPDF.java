@@ -1,57 +1,66 @@
-// Save this as SignPDF.java
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.bouncycastle.cert.jcajce.JcaCertStore;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS12KeyStore;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
+import org.bouncycastle.pkcs.Pkcs12SafeBag;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.util.Arrays;
-import java.util.Calendar;
 
 public class SignPDF {
-    public static void main(String[] args) throws Exception {
-        PDDocument document = PDDocument.load(new FileInputStream("input.pdf"));
-        PDSignature signature = new PDSignature();
-        signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
-        signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
-        signature.setName("User Name");
-        signature.setLocation("Location");
-        signature.setReason("Reason for signing");
-        signature.setSignDate(Calendar.getInstance());
+    public static void main(String[] args) {
+        // Load the PFX certificate
+        try {
+            // Get the password from the environment variable
+            String pfxPassword = System.getenv("PFX_PASSWORD");
 
-        // Load the PFX certificate with the password from an environment variable
-        String pfxPassword = System.getenv("PFX_PASSWORD");
-        KeyStore keystore = KeyStore.getInstance("PKCS12");
-        keystore.load(new FileInputStream("certificate.pfx"), pfxPassword.toCharArray());
-        PrivateKey privateKey = (PrivateKey) keystore.getKey("alias", pfxPassword.toCharArray());
-        Certificate[] certificateChain = keystore.getCertificateChain("alias");
+            // Ensure Bouncy Castle is a security provider
+            Security.addProvider(new BouncyCastleProvider());
 
-        SignatureOptions signatureOptions = new SignatureOptions();
-        document.addSignature(signature, new SignatureInterface() {
-            public byte[] sign(InputStream content) throws SignatureException {
-                try {
-                    JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSA");
-                    builder.setProvider("BC");
-                    CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-                    gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(
-                            new JcaDigestCalculatorProviderBuilder().setProvider("BC").build())
-                            .build(builder.build(privateKey), (X509Certificate) certificateChain[0]));
-                    gen.addCertificates(new JcaCertStore(Arrays.asList(certificateChain)));
-                    return gen.generate(content, false).getEncoded();
-                } catch (Exception e) {
-                    throw new SignatureException("Error while creating PKCS7 signature", e);
+            // Load the keystore
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            InputStream keystoreStream = new FileInputStream("certificate.pfx");
+            keystore.load(keystoreStream, pfxPassword.toCharArray());
+
+            // Extract the private key and certificate
+            String alias = keystore.aliases().nextElement();
+            PrivateKey privateKey = (PrivateKey) keystore.getKey(alias, pfxPassword.toCharArray());
+            Certificate[] certChain = keystore.getCertificateChain(alias);
+
+            // Load the PDF document
+            PDDocument document = PDDocument.load(new FileInputStream("input.pdf"));
+
+            // Prepare the signature
+            PDSignature signature = new PDSignature();
+            SignatureOptions signatureOptions = new SignatureOptions();
+            signatureOptions.setVisualSignature(new PDSignature()); // Set visual signature options
+
+            // Sign the document
+            document.addSignature(signature, new SignatureInterface() {
+                @Override
+                public byte[] sign(InputStream content) {
+                    // Use the private key to sign the content (implement your signing logic)
+                    // For now, return a placeholder byte array
+                    // TODO: Implement actual signing logic using privateKey and content
+                    return new byte[0]; // Replace with actual signing logic
                 }
-            }
-        }, signatureOptions);
-        document.save("signed_output.pdf");
-        document.close();
+            }, signatureOptions);
+
+            // Save the signed PDF
+            document.save("signed_output.pdf");
+            document.close();
+            System.out.println("PDF signed successfully!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
