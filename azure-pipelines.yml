@@ -23,13 +23,13 @@ steps:
 - script: |
     virtualenv venv
     source venv/bin/activate
-    pip install pyopenssl cryptography
+    pip install PyPDF2 cryptography  # Install necessary libraries for PDF signing
   displayName: 'Setup virtual environment and install dependencies'
 
 - script: |
-    chmod +x sign_pdf.sh
-    ./sign_pdf.sh input.pdf certificate.crt private.key TerosonIsON0523!
-  displayName: 'Run PDF signing Bash script'
+    source venv/bin/activate  # Activate the virtual environment
+    python sign_pdf_embed.py input.pdf certificate.crt private.key "TerosonIsON0523!"  # Run the Python signing script
+  displayName: 'Run PDF signing Python script'
 
 - task: CopyFiles@2
   inputs:
