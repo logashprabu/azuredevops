@@ -24,13 +24,12 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
         # Read the private key
         with open(key_file, "rb") as key:
             try:
-            # Try loading the key with the password (if encrypted)
-                private_key = load_pem_private_key(key.read())
-            except InvalidKey:
-            # If it fails, assume the key is not encrypted (common case)
+                # Try loading the key with the password
+                private_key = load_pem_private_key(key.read(), password=key_password.encode())
+            except ValueError:
+                # If it fails, it means the key is not encrypted, so load it without password
                 key.seek(0)  # Reset the file pointer
-                private_key = load_pem_private_key(key.read())
-
+                private_key = load_pem_private_key(key.read(), password=None)
 
         # Generate a signature (simplified version for demonstration)
         data_to_sign = b"Sample data to sign"  # Replace with actual data to be signed
