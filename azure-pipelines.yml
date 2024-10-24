@@ -31,16 +31,23 @@ steps:
     python sign_pdf_embed.py input.pdf certificate.crt private.key "TerosonIsON0523!"  # Run the Python signing script
   displayName: 'Run PDF signing Python script'
 
+- script: |
+    echo "Files in the source directory:"
+    ls $(Build.SourcesDirectory)
+    echo "Files in the staging directory before copying:"
+    ls $(Build.ArtifactStagingDirectory)
+  displayName: 'List Files Before Copying'
+
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: '**/*.pdf'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    SourceFolder: '$(Build.SourcesDirectory)'  # Source directory to copy from
+    Contents: 'signed_output.pdf'  # Specify the signed PDF file explicitly
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'  # Staging directory for artifacts
   displayName: 'Copy Signed PDFs to Artifact Staging Directory'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'SignedPDFs'
-    publishLocation: 'Container'
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'  # Path where signed PDFs are copied
+    artifactName: 'SignedPDFs'  # Name of the artifact to publish
+    publishLocation: 'Container'  # Publish location
   displayName: 'Publish Signed PDFs'
