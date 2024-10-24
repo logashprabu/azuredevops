@@ -25,11 +25,11 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
         with open(key_file, "rb") as key:
             try:
             # Try loading the key with the password (if encrypted)
-                private_key = load_pem_private_key(key.read(), password=key_password.encode())
+                private_key = load_pem_private_key(key.read())
             except InvalidKey:
             # If it fails, assume the key is not encrypted (common case)
                 key.seek(0)  # Reset the file pointer
-                private_key = load_pem_private_key(key.read(), password=None)
+                private_key = load_pem_private_key(key.read())
 
 
         # Generate a signature (simplified version for demonstration)
