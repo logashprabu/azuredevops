@@ -28,7 +28,7 @@ steps:
 
 - script: |
     chmod +x sign_pdf.sh
-    ./sign_pdf.sh input.pdf path/to/certificate.crt path/to/private.key your_passphrase
+    ./sign_pdf.sh input.pdf certificate.crt private.key TerosonIsON0523!
   displayName: 'Run PDF signing Bash script'
 
 - task: CopyFiles@2
