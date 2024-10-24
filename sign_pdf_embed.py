@@ -40,4 +40,4 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
             writer.write(signed_pdf)
 
 # Example usage
-#sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private.key", "passphrase")
+sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private.key", "passphrase")
