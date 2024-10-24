@@ -1,9 +1,12 @@
 # sign_pdf_embed.py
 
 import PyPDF2
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.exceptions import InvalidKey
+import os
 
 def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
     # Read the PDF
@@ -20,7 +23,13 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
 
         # Read the private key
         with open(key_file, "rb") as key:
-            private_key = load_pem_private_key(key.read(), password=key_password.encode())
+            try:
+                # Try loading the key with the password
+                private_key = load_pem_private_key(key.read(), password=key_password.encode())
+            except ValueError:
+                # If it fails, it means the key is not encrypted, so load it without password
+                key.seek(0)  # Reset the file pointer
+                private_key = load_pem_private_key(key.read(), password=None)
 
         # Generate a signature (simplified version for demonstration)
         data_to_sign = b"Sample data to sign"
@@ -39,5 +48,8 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
         with open(output_pdf, "wb") as signed_pdf:
             writer.write(signed_pdf)
 
+    print(f"Signed PDF created at: {output_pdf}")
+
 # Example usage
-sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private.key", "passphrase")
+if __name__ == "__main__":
+    sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private.key", "TerosonIsON0523!")
