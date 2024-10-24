@@ -1,54 +1,46 @@
 trigger:
   branches:
     include:
-      - main
+      - main  # Update this to your branch name if needed
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: PDFSigningSecrets
+  pythonVersion: '3.9'  # Python version for any additional needs
 
-steps:  # This line is critical to define the start of the steps section
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(pythonVersion)
+  displayName: 'Set Python Version'
 
-  # Task to install Java JDK
-  - task: JavaToolInstaller@0
-    inputs:
-      versionSpec: '8'  # Specify the Java version needed
-      cleanDestinationDirectory: true
-      jdkArchitectureOption: 'x64'  # Specify the architecture (32-bit or 64-bit)
-      jdkSourceOption: 'PreInstalled'  # Specify where to get the JDK from (tool cache or user-supplied blob)
+- script: |
+    python -m pip install --upgrade pip
+    pip install virtualenv
+  displayName: 'Upgrade pip and install virtualenv'
 
-  # Download necessary libraries for PDF signing
-  - script: |
-      mkdir -p libs  # Create libs directory if it doesn't exist
-      wget https://downloads.apache.org/pdfbox/3.0.3/pdfbox-app-3.0.3.jar
-      wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/1.70/bcpkix-jdk15on-1.70.jar -O libs/bcpkix.jar
-      wget https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.70/bcprov-jdk15on-1.70.jar -O libs/bcprov.jar
-    displayName: 'Download PDFBox and BouncyCastle Libraries'
+- script: |
+    virtualenv venv
+    source venv/bin/activate
+    pip install pyopenssl cryptography
+  displayName: 'Setup virtual environment and install dependencies'
 
-  # Compile your Java file
-  - script: |
-      # Set the classpath with all required JARs explicitly
-      javac -cp "libs/pdfbox.jar:libs/bcpkix.jar:libs/bcprov.jar" SignPDF.java
-    displayName: 'Compile SignPDF.java'
+- script: |
+    chmod +x sign_pdf.sh
+    ./sign_pdf.sh input.pdf path/to/certificate.crt path/to/private.key your_passphrase
+  displayName: 'Run PDF signing Bash script'
 
-  # Download the PFX certificate securely
-  - task: DownloadSecureFile@1
-    name: downloadPfx
-    inputs:
-      secureFile: 'certificate.pfx'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: '**/*.pdf'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy Signed PDFs to Artifact Staging Directory'
 
-  # Run your Java signing program
-  - script: |
-      mv $(downloadPfx.secureFilePath) certificate.pfx
-      java -cp "libs/*:." SignPDF  # Run the Java program with the classpath set to all jars
-    displayName: 'Run PDF Signing Program'
-    env:
-      PFX_PASSWORD: $(PFX_PASSWORD)  # Pass the password variable
-
-  # Publish the signed PDF
-  - task: PublishPipelineArtifact@1
-    inputs:
-      targetPath: 'signed_output.pdf'  # Ensure this file is created by your Java program
-      artifactName: 'SignedPDF'
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'SignedPDFs'
+    publishLocation: 'Container'
+  displayName: 'Publish Signed PDFs'
