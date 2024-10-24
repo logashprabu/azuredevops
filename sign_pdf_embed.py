@@ -32,7 +32,7 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
                 private_key = load_pem_private_key(key.read(), password=None)
 
         # Generate a signature (simplified version for demonstration)
-        data_to_sign = b"Sample data to sign"
+        data_to_sign = b"Sample data to sign"  # Replace with actual data to be signed
         signature = private_key.sign(
             data_to_sign,
             padding.PKCS1v15(),
@@ -41,7 +41,7 @@ def sign_pdf(input_pdf, output_pdf, cert_file, key_file, key_password):
 
         # Embed the signature as metadata (for demonstration only)
         writer.add_metadata({
-            "/Signature": signature.hex()
+            "/Signature": signature.hex()  # Convert signature to hexadecimal string
         })
 
         # Write the signed PDF
