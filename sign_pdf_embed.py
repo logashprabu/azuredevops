@@ -1,46 +1,39 @@
-import pikepdf
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
+from pyhanko.sign import signers
+from pyhanko.sign.fields import SigFieldSpec
+from pyhanko_certvalidator import CertificateValidator
+from pyhanko.sign.general import load_private_key_from_pemder
 
-def load_private_key(private_key_path, password=None):
-    with open(private_key_path, "rb") as key_file:
-        return load_pem_private_key(key_file.read(), password=password)
+def sign_pdf(input_pdf, output_pdf, private_key_path, cert_path, password=None):
+    # Load private key and certificate
+    with open(private_key_path, 'rb') as pk_file, open(cert_path, 'rb') as cert_file:
+        private_key = load_private_key_from_pemder(pk_file.read(), password=password)
+        cert = cert_file.read()
 
-def sign_pdf(input_pdf, output_pdf, private_key_path, password=None):
-    # Load the private key
-    private_key = load_private_key(private_key_path, password)
+    # Define a signer object using the key and certificate
+    signer = signers.SimpleSigner(
+        signing_cert=cert,
+        signing_key=private_key,
+        cert_chain=[cert],  # Provide additional certificates if needed
+        prefer_pss=True
+    )
 
-    # Open the PDF
-    with pikepdf.open(input_pdf) as pdf:
-        # Create a new signature dictionary in the PDF
-        pdf.signatures.append()
-        
-        # Extract some content for demonstration purposes (actual content selection may vary)
-        page = pdf.pages[0]
-        content_to_sign = page.extract_text().encode('utf-8')
+    # Sign the PDF
+    with open(input_pdf, 'rb') as in_file:
+        with open(output_pdf, 'wb') as out_file:
+            signers.sign_pdf(
+                in_file,
+                signature_meta=signers.SignatureMetadata(field_name='Sig1'),
+                signer=signer,
+                output=out_file
+            )
 
-        # Create the digital signature
-        signature = private_key.sign(
-            content_to_sign,
-            padding.PKCS1v15(),
-            Prehashed(hashes.SHA256())
-        )
-
-        # Save the signed PDF
-        pdf.save(output_pdf)
-    
     print(f"PDF successfully signed and saved as: {output_pdf}")
 
 if __name__ == "__main__":
-    # Paths to the private key and the PDF files
     input_pdf_path = "input.pdf"
     output_pdf_path = "digitally_signed_document.pdf"
-    private_key_path = "private_key.pem"  # Specify your private key path
+    private_key_path = "private_key.pem"  # Replace with your key path
+    cert_path = "certificate.pem"  # Replace with your certificate path
+    password = None  # Use your private key password if encrypted
 
-    # Optional password for private key (if encrypted)
-    password = None  # Or, use "your-password".encode() if using an encrypted key
-
-    # Call the function to sign the PDF
-    sign_pdf(input_pdf_path, output_pdf_path, private_key_path, password=password)
+    sign_pdf(input_pdf_path, output_pdf_path, private_key_path, cert_path, password=password)
