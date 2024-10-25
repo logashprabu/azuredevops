@@ -1,42 +1,43 @@
-from PyPDF2 import PdfReader, PdfWriter
-from cryptography.hazmat.primitives.serialization import pkcs12
-from cryptography.hazmat.backends import default_backend
+import aspose.pdf as pdf
+import aspose.pydrawing as drawing
 
-def load_private_key_from_pkcs12(p12_file_path, password=None):
-    with open(p12_file_path, "rb") as p12_file:
-        private_key, certificate, additional_certs = pkcs12.load_key_and_certificates(
-            p12_file.read(), password.encode() if password else None, backend=default_backend()
-        )
-        return private_key, certificate
+def sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password):
+    # Load the license in your application to crop the PDF
+    pdfCropLicense = pdf.License()
+    pdfCropLicense.set_license("C://Words//Conholdate.Total.Product.Family.lic")  # Update your license path if necessary
 
-def sign_pdf(input_pdf_path, output_pdf_path, pkcs12_path, pkcs12_password):
-    # Read the input PDF
-    with open(input_pdf_path, 'rb') as input_pdf_file:
-        reader = PdfReader(input_pdf_file)
-        writer = PdfWriter()
-        for page in reader.pages:
-            writer.add_page(page)
+    # Load the PDF file to crop
+    pdfDoc = pdf.Document(input_pdf_path)
 
-    # Load the PKCS#12 certificate
-    private_key, certificate = load_private_key_from_pkcs12(pkcs12_path, pkcs12_password)
-    
-    # Add the signature to the PDF (simple text, not a cryptographic signature)
-    writer.add_metadata({
-        '/Title': 'Signed PDF',
-        '/Author': 'Your Name',
-        '/Subject': 'Signed using a digital certificate',
-        '/Keywords': 'signed, digital signature'
-    })
+    # Instantiate the PdfFileSignature for the loaded PDF document
+    signature = pdf.facades.PdfFileSignature(pdfDoc)
 
-    with open(output_pdf_path, 'wb') as output_pdf_file:
-        writer.write(output_pdf_file)
-        
-    # Note: Proper digital signing of PDFs usually involves cryptographic operations and would need a dedicated library for signing
+    # Load the certificate file along with the password
+    pkcs = pdf.forms.PKCS7(cert_path, cert_password)
+
+    # Assign the access permissions
+    docMdpSignature = pdf.forms.DocMDPSignature(pkcs, pdf.forms.DocMDPAccessPermissions.FILLING_IN_FORMS)
+
+    # Set the rectangle for the signature placement
+    rect = drawing.Rectangle(150, 650, 450, 150)
+
+    # Set signature appearance
+    signature.signature_appearance = "sample.jpg"  # Update with your signature image path
+
+    # Sign the PDF file with the certify method
+    signature.certify(1, "Signature Insert Reason", "Contact", "Location", True, rect, docMdpSignature)
+
+    # Save digitally signed PDF file 
+    signature.save(output_pdf_path)
+
+    print("PDF successfully signed and saved as:", output_pdf_path)
 
 if __name__ == "__main__":
-    input_pdf_path = "input.pdf"
-    output_pdf_path = "signed_output.pdf"
-    pkcs12_path = "certificate.p12"
-    pkcs12_password = "password"
+    # Paths to the PDF file, certificate, and output file
+    input_pdf_path = "input.pdf"  # Specify your input PDF path
+    output_pdf_path = "Digitally_Signed_PDF.pdf"  # Specify your output PDF path
+    cert_path = "certificate.p12"  # Specify your certificate path
+    cert_password = "password"  # Specify your certificate password
 
-    sign_pdf(input_pdf_path, output_pdf_path, pkcs12_path, pkcs12_password)
+    # Call the function to sign the PDF
+    sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password)
