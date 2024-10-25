@@ -28,6 +28,7 @@ steps:
     pip install pyhanko
     pip install pyOpenSSL
     pip install aspose-pdf
+    pip install Spire.PDF
 
 
 
