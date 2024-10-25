@@ -1,9 +1,8 @@
 import pikepdf
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
-from cryptography.hazmat.primitives import serialization
 
 def load_private_key(private_key_path, password=None):
     with open(private_key_path, "rb") as key_file:
@@ -38,7 +37,10 @@ if __name__ == "__main__":
     # Paths to the private key and the PDF files
     input_pdf_path = "document_to_sign.pdf"
     output_pdf_path = "digitally_signed_document.pdf"
-    private_key_path = "private_key.pem"
+    private_key_path = "private_key.pem"  # Specify your private key path
+
+    # Optional password for private key (if encrypted)
+    password = None  # Or, use "your-password".encode() if using an encrypted key
 
     # Call the function to sign the PDF
-    sign_pdf(input_pdf_path, output_pdf_path, private_key, password=password)
+    sign_pdf(input_pdf_path, output_pdf_path, private_key_path, password=password)
