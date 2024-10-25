@@ -8,10 +8,10 @@ doc = PdfDocument()
 doc.LoadFromFile("input.pdf")
 
 # Specify the path of the pfx certificate
-pfxCertificatePath = "MyCertificate.p12"
+pfxCertificatePath = "certificate.pfx"
 
 # Specify the password of the PDF certificate
-pfxPassword = "password"
+pfxPassword = "TerosonIsON0523!"
 
 # Create a signature maker
 signatureMaker = PdfOrdinarySignatureMaker(doc, pfxCertificatePath, pfxPassword)
@@ -38,7 +38,7 @@ appearance.LocationLabel = "Location: "
 appearance.ReasonLabel = "Reason: "
 
 # Load an image for signature appearance
-image = PdfImage.FromFile("C:\\Users\\Administrator\\Desktop\\signature.png")
+image = PdfImage.FromFile("sample.jpg")
 
 # Set the image as the signature image
 appearance.SignatureImage = image
