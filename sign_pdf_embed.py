@@ -1,34 +1,44 @@
 import pikepdf
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
+from cryptography.hazmat.primitives import serialization
 
-def sign_pdf(input_pdf, output_pdf, cert_path, key_path, password):
-    # Load the private key and certificate
-    with open(key_path, "rb") as key_file:
-        private_key = serialization.load_pem_private_key(
-            key_file.read(),
-            password=password.encode(),
-            backend=default_backend()
-        )
+def load_private_key(private_key_path, password=None):
+    with open(private_key_path, "rb") as key_file:
+        return load_pem_private_key(key_file.read(), password=password)
 
-    # Load the PDF
+def sign_pdf(input_pdf, output_pdf, private_key_path, password=None):
+    # Load the private key
+    private_key = load_private_key(private_key_path, password)
+
+    # Open the PDF
     with pikepdf.open(input_pdf) as pdf:
-        # Here, you can modify the PDF or add a signature field if needed
+        # Create a new signature dictionary in the PDF
+        pdf.signatures.append()
+        
+        # Extract some content for demonstration purposes (actual content selection may vary)
+        page = pdf.pages[0]
+        content_to_sign = page.extract_text().encode('utf-8')
 
-        # Sign the PDF
-        # This is a placeholder for your signing logic
-        # Example: create a digital signature using the private key
+        # Create the digital signature
         signature = private_key.sign(
-            b"Example data to sign",  # Replace with actual data
+            content_to_sign,
             padding.PKCS1v15(),
-            hashes.SHA256()
+            Prehashed(hashes.SHA256())
         )
 
-        # Add the signature to the PDF
-        # Implement logic to append the signature to the PDF file
-
+        # Save the signed PDF
         pdf.save(output_pdf)
+    
+    print(f"PDF successfully signed and saved as: {output_pdf}")
 
 if __name__ == "__main__":
-    sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private_key.pem", "password")
+    # Paths to the private key and the PDF files
+    input_pdf_path = "document_to_sign.pdf"
+    output_pdf_path = "digitally_signed_document.pdf"
+    private_key_path = "private_key.pem"
+
+    # Call the function to sign the PDF
+    sign_pdf(input_pdf_path, output_pdf_path, private_key, password=password)
