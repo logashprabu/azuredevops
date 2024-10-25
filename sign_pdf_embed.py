@@ -1,39 +1,59 @@
-import aspose.pdf as pdf
-import aspose.pydrawing as drawing
+from spire.pdf.common import *
+from spire.pdf import *
 
-def sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password):
-    # Load the PDF file to crop
-    pdfDoc = pdf.Document(input_pdf_path)
+# Create a PdfDocument object
+doc = PdfDocument()
 
-    # Instantiate the PdfFileSignature for the loaded PDF document
-    signature = pdf.facades.PdfFileSignature(pdfDoc)
+# Load a PDF file
+doc.LoadFromFile("input.pdf")
 
-    # Load the certificate file along with the password
-    pkcs = pdf.forms.PKCS7(cert_path, cert_password)
+# Specify the path of the pfx certificate
+pfxCertificatePath = "MyCertificate.p12"
 
-    # Assign the access permissions
-    docMdpSignature = pdf.forms.DocMDPSignature(pkcs, pdf.forms.DocMDPAccessPermissions.FILLING_IN_FORMS)
+# Specify the password of the PDF certificate
+pfxPassword = "password"
 
-    # Set the rectangle for the signature placement
-    rect = drawing.Rectangle(150, 650, 450, 150)
+# Create a signature maker
+signatureMaker = PdfOrdinarySignatureMaker(doc, pfxCertificatePath, pfxPassword)
 
-    # Set signature appearance
-    signature.signature_appearance = "sample.jpg"  # Update with your signature image path
+# Show validity symbol in signature
+signatureMaker.SetAcro6Layers(False)
 
-    # Sign the PDF file with the certify method
-    signature.certify(1, "Signature Insert Reason", "Contact", "Location", True, rect, docMdpSignature)
+# Get the signature
+signature = signatureMaker.Signature
 
-    # Save digitally signed PDF file 
-    signature.save(output_pdf_path)
+# Configure the signature properties
+signature.Name = "Alexander"
+signature.ContactInfo = "555666"
+signature.Location = "U.S."
+signature.Reason = "This is the final version."
 
-    print("PDF successfully signed and saved as:", output_pdf_path)
+# Create a custom signature appearance
+appearance = PdfSignatureAppearance(signature)
 
-if __name__ == "__main__":
-    # Paths to the PDF file, certificate, and output file
-    input_pdf_path = "input.pdf"  # Specify your input PDF path
-    output_pdf_path = "Signed_PDF.pdf"  # Specify your output PDF path
-    cert_path = "certificate.p12"  # Specify your certificate path
-    cert_password = "password"  # Specify your certificate password
+# Set labels for the signature
+appearance.NameLabel = "Signer: "
+appearance.ContactInfoLabel = "Phone: "
+appearance.LocationLabel = "Location: "
+appearance.ReasonLabel = "Reason: "
 
-    # Call the function to sign the PDF
-    sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password)
+# Load an image for signature appearance
+image = PdfImage.FromFile("C:\\Users\\Administrator\\Desktop\\signature.png")
+
+# Set the image as the signature image
+appearance.SignatureImage = image
+
+# Set the graphic mode
+appearance.GraphicMode = GraphicMode.SignImageAndSignDetail
+
+# Get the last page
+page = doc.Pages[doc.Pages.Count - 1]
+
+# Add the signature to a specified location of the page
+signatureMaker.MakeSignature("Signature by Alexander", page, 54.0, page.Size.Height - 100.0, 240.0, 80.0, appearance)
+
+# Save the signed document
+doc.SaveToFile("DisplayValiditySymbol.pdf")
+
+# Dispose resources
+doc.Dispose()
