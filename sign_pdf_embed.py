@@ -35,7 +35,7 @@ def sign_pdf(input_pdf, output_pdf, private_key_path, password=None):
 
 if __name__ == "__main__":
     # Paths to the private key and the PDF files
-    input_pdf_path = "document_to_sign.pdf"
+    input_pdf_path = "input.pdf"
     output_pdf_path = "digitally_signed_document.pdf"
     private_key_path = "private_key.pem"  # Specify your private key path
 
