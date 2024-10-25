@@ -17,7 +17,7 @@ pfxPassword = "TerosonIsON0523!"
 signatureMaker = PdfOrdinarySignatureMaker(doc, pfxCertificatePath, pfxPassword)
 
 # Show validity symbol in signature
-signatureMaker.SetAcro6Layers(False)
+#signatureMaker.SetAcro6Layers(False)
 
 # Get the signature
 signature = signatureMaker.Signature
