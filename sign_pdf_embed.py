@@ -1,4 +1,4 @@
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfReader, PdfWriter
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
 
@@ -12,16 +12,16 @@ def load_private_key_from_pkcs12(p12_file_path, password=None):
 def sign_pdf(input_pdf_path, output_pdf_path, pkcs12_path, pkcs12_password):
     # Read the input PDF
     with open(input_pdf_path, 'rb') as input_pdf_file:
-        reader = PdfFileReader(input_pdf_file)
-        writer = PdfFileWriter()
-        for page_num in range(reader.getNumPages()):
-            writer.addPage(reader.getPage(page_num))
+        reader = PdfReader(input_pdf_file)
+        writer = PdfWriter()
+        for page in reader.pages:
+            writer.add_page(page)
 
     # Load the PKCS#12 certificate
     private_key, certificate = load_private_key_from_pkcs12(pkcs12_path, pkcs12_password)
     
     # Add the signature to the PDF (simple text, not a cryptographic signature)
-    writer.addMetadata({
+    writer.add_metadata({
         '/Title': 'Signed PDF',
         '/Author': 'Your Name',
         '/Subject': 'Signed using a digital certificate',
