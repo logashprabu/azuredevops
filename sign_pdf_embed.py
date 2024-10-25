@@ -1,4 +1,4 @@
-from pyhanko.sign import signers
+from pyhanko.sign import signers, fields
 from pyhanko_certvalidator import ValidationContext
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
@@ -18,7 +18,6 @@ def sign_pdf(input_pdf, output_pdf, private_key_path, password=None):
     signer = signers.SimpleSigner(
         signing_cert=certificate,
         signing_key=private_key,
-        cert_registry=signers.SimpleCertificateStore([certificate]),
         signature_mechanism=signers.PdfSignatureMetadata()
     )
 
