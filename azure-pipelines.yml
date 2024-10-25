@@ -49,7 +49,7 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)'  # Source directory to copy from
-    Contents: 'signed_output.pdf'  # Specify the signed PDF file explicitly
+    Contents: 'DisplayValiditySymbol.pdf'  # Specify the signed PDF file explicitly
     TargetFolder: '$(Build.ArtifactStagingDirectory)'  # Staging directory for artifacts
   displayName: 'Copy Signed PDFs to Artifact Staging Directory'
 
