@@ -2,10 +2,6 @@ import aspose.pdf as pdf
 import aspose.pydrawing as drawing
 
 def sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password):
-    # Load the license in your application to crop the PDF
-    pdfCropLicense = pdf.License()
-    pdfCropLicense.set_license("C://Words//Conholdate.Total.Product.Family.lic")  # Update your license path if necessary
-
     # Load the PDF file to crop
     pdfDoc = pdf.Document(input_pdf_path)
 
@@ -35,7 +31,7 @@ def sign_pdf(input_pdf_path, output_pdf_path, cert_path, cert_password):
 if __name__ == "__main__":
     # Paths to the PDF file, certificate, and output file
     input_pdf_path = "input.pdf"  # Specify your input PDF path
-    output_pdf_path = "Digitally_Signed_PDF.pdf"  # Specify your output PDF path
+    output_pdf_path = "Signed_PDF.pdf"  # Specify your output PDF path
     cert_path = "certificate.p12"  # Specify your certificate path
     cert_password = "password"  # Specify your certificate password
 
