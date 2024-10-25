@@ -27,6 +27,8 @@ steps:
     pip install pikepdf cryptography
     pip install pyhanko
     pip install pyOpenSSL
+    pip install aspose-pdf
+
 
 
   displayName: 'Setup virtual environment and install dependencies'
