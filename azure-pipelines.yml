@@ -26,6 +26,8 @@ steps:
     pip install PyPDF2 cryptography  # Install necessary libraries for PDF signing
     pip install pikepdf cryptography
     pip install pyhanko
+    pip install pyOpenSSL
+
 
   displayName: 'Setup virtual environment and install dependencies'
 
