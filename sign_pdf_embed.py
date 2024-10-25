@@ -1,4 +1,4 @@
-from pyhanko.sign import signers, fields
+from pyhanko.sign import signers
 from pyhanko_certvalidator import ValidationContext
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.backends import default_backend
@@ -8,16 +8,17 @@ def load_private_key_from_pkcs12(p12_file_path, password=None):
         private_key, certificate, additional_certs = pkcs12.load_key_and_certificates(
             p12_file.read(), password.encode() if password else None, backend=default_backend()
         )
-        return private_key, certificate
+        return private_key, certificate, additional_certs
 
 def sign_pdf(input_pdf, output_pdf, private_key_path, password=None):
     # Load the private key and certificate
-    private_key, certificate = load_private_key_from_pkcs12(private_key_path, password)
+    private_key, certificate, additional_certs = load_private_key_from_pkcs12(private_key_path, password)
 
     # Create the signer
     signer = signers.SimpleSigner(
         signing_cert=certificate,
         signing_key=private_key,
+        cert_registry=signers.SimpleCertificateStore([certificate] + additional_certs),
         signature_mechanism=signers.PdfSignatureMetadata()
     )
 
