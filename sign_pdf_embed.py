@@ -31,4 +31,4 @@ def sign_pdf(input_pdf, output_pdf, cert_path, key_path, password):
         pdf.save(output_pdf)
 
 if __name__ == "__main__":
-    sign_pdf("input.pdf", "signed_output.pdf", "path/to/certificate.crt", "path/to/private_key.pem", "your_password")
+    sign_pdf("input.pdf", "signed_output.pdf", "certificate.crt", "private_key.pem", "TerosonIsON0523!")
