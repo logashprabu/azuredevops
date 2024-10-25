@@ -6,7 +6,7 @@ from pyhanko.sign.general import load_private_key_from_pemder
 def sign_pdf(input_pdf, output_pdf, private_key_path, cert_path, password=None):
     # Load private key and certificate
     with open(private_key_path, 'rb') as pk_file, open(cert_path, 'rb') as cert_file:
-        private_key = load_private_key_from_pemder(pk_file.read(), password=password)
+        private_key = load_private_key_from_pemder(pk_file.read())
         cert = cert_file.read()
 
     # Define a signer object using the key and certificate
