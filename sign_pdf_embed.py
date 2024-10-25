@@ -16,26 +16,20 @@ def load_private_key_from_pkcs12(p12_file_path, password=None):
         return private_key, certificate
 
 def sign_pdf(input_pdf, output_pdf, private_key_path, cert_path, password=None):
-    """Sign the PDF with a private key and certificate."""
     # Load the private key and certificate
     private_key, certificate = load_private_key_from_pkcs12(private_key_path, password)
-    
+
     # Create the signer
     signer = signers.SimpleSigner(
         signing_cert=certificate,
         signing_key=private_key,
-        cert_registry=signers.SimpleCertificateStore([certificate]),
+        signature_mechanism=signers.PdfSignatureMetadata()
     )
-    
+
     # Sign the PDF
     with open(input_pdf, 'rb') as pdf_file:
-        writer = signers.PdfSigner(
-            signer,
-            signature_meta=signers.PdfSignatureMetadata(field_name="Signature1"),
-            new_field_spec=fields.SigFieldSpec(sig_field_name="Signature1")
-        )
-        with open(output_pdf, 'wb') as signed_pdf:
-            writer.sign_pdf(pdf_file, signed_pdf)
+        writer = signers.PdfSigner(signer)
+        
 
 if __name__ == "__main__":
     # Paths to the private key, certificate, and the PDF files
